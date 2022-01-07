@@ -1,6 +1,6 @@
 import requests
 from sqlalchemy import desc
-from flask import render_template, redirect, url_for, request, flash, send_from_directory, Blueprint
+from flask import render_template, redirect, url_for, request, flash, Blueprint
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash
 
@@ -199,7 +199,7 @@ def update():
     try:
         if request.method == 'POST':
             clean_count = cleanDatabase(Data)
-            print("Count clean"+str(clean_count))
+            print("Count clean: "+str(clean_count))
             total_count = insertDataFromApi('Pink+Floyd')
             flash('Total uploaded: '+str(total_count))
             return render_template('update.html')
