@@ -42,12 +42,12 @@ class Data(db.Model):
     collection_name = db.Column(db.String(255), nullable=True)
     track_name = db.Column(db.String(255), nullable=False)
     collection_price = db.Column(db.Numeric(5, 2), nullable=True)
-    track_price = db.Column(db.Numeric(5, 2), nullable=True)
+    track_price = db.Column(db.Numeric(7, 2), nullable=True)
     primary_genre_name = db.Column(db.String(255), nullable=True)
-    track_count = db.Column(db.Numeric(5), nullable=True)
+    track_count = db.Column(db.Numeric(10), nullable=True)
     track_number = db.Column(db.Numeric(10), nullable=True)
-    release_date = db.Column(db.DateTime(), nullable=False)
-    created_on = db.Column(db.DateTime(), default=datetime.now, nullable=False)
+    release_date = db.Column(db.String(), nullable=False)
+    created_on = db.Column(db.DateTime(35), default=datetime.now, nullable=False)
 
     def __init__(self, kind, collection_name, track_name, collection_price, track_price, primary_genre_name, track_count, track_number, release_date):
         self.kind = kind
