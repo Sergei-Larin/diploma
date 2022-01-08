@@ -1,9 +1,8 @@
 from flask_login import UserMixin
 
 from application import db, manager
-from flask_jwt_extended import create_access_token
 from werkzeug.security import check_password_hash, generate_password_hash
-from datetime import timedelta, datetime
+from datetime import datetime
 
 
 class User(db.Model, UserMixin):
@@ -15,12 +14,6 @@ class User(db.Model, UserMixin):
     def __init__(self, **kwargs):
         self.login = kwargs.get('login')
         self.password = generate_password_hash(kwargs.get('password'), "sha256")
-
-    def get_token(self, expire_time=8):
-        expire_delta = timedelta(expire_time)
-        token = create_access_token(
-            identity=self.login, expires_delta=expire_delta)
-        return token
 
     @classmethod
     def authenticated(cls, login, password):

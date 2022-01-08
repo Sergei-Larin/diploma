@@ -1,11 +1,11 @@
 import requests
 from sqlalchemy import desc
 from flask import render_template, redirect, url_for, request, flash, Blueprint
-from flask_login import login_user, login_required, logout_user, current_user
+from flask_login import login_user, login_required, logout_user
 from werkzeug.security import check_password_hash
 
 
-from application import db, app
+from application import db
 from application.models import User, Data
 
 
@@ -238,7 +238,7 @@ def get_sort_data():
             for data in data_all:
                 if str(year) in str(data.release_date):
                     result.append(data)
-                    count+=1
+                    count += 1
             flash("Find results: "+str(count))
             return render_template('sort_data.html', data_all=result)
         else:
