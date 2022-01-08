@@ -1,7 +1,6 @@
 import logging as log
 import sys
 import unittest
-
 import requests
 import urllib3
 
@@ -19,6 +18,10 @@ class SmokeTests(unittest.TestCase):
         self.assertEqual(SmokeTests.get("http://localhost:5000/get_data_all").status_code, 401)
         self.assertEqual(SmokeTests.get("http://localhost:5000/login").status_code, 200)
         self.assertEqual(SmokeTests.get("http://localhost:5000/register").status_code, 200)
+
+    def test_Api_Itunes_Exist(self):
+        log.info("Testing Itunes api access")
+        self.assertEqual(SmokeTests.get("https://itunes.apple.com/search?").status_code, 200)
 
     @staticmethod
     def get(url):

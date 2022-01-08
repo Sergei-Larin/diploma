@@ -12,7 +12,7 @@ from application.models import User, Data
 ui = Blueprint('ui', __name__)
 
 
-def insertDataFromApi(search):
+def insert_data_from_api(search):
     total_count = 0
     record_count = 1
     record_offset = 0
@@ -200,7 +200,7 @@ def update():
         if request.method == 'POST':
             clean_count = cleanDatabase(Data)
             print("Count clean: "+str(clean_count))
-            total_count = insertDataFromApi('Pink+Floyd')
+            total_count = insert_Data_From_Api('Pink+Floyd')
             flash('Total uploaded: '+str(total_count))
             return render_template('update.html')
         else:
