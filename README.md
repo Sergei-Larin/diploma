@@ -1,1 +1,2 @@
 # diploma project
+test text
