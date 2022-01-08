@@ -200,7 +200,7 @@ def update():
         if request.method == 'POST':
             clean_count = cleanDatabase(Data)
             print("Count clean: "+str(clean_count))
-            total_count = insert_Data_From_Api('Pink+Floyd')
+            total_count = insert_data_from_api('Pink+Floyd')
             flash('Total uploaded: '+str(total_count))
             return render_template('update.html')
         else:
