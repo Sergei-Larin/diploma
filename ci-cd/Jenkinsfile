@@ -33,7 +33,7 @@ pipeline {
                POSTGRES_CRED = credentials('postgres-id')
                CRED_USER = '$POSTGRES_CRED_USR'
                CRED_PASS = '$POSTGRES_CRED_PSW'
-               STAGING_DATABASE_URL = 'postgresql://'+'$CRED_USER'+':'+'$CRED_PASS'+'@'+'$PG_SERVER'+ '/' +'$DATABASE'
+               STAGING_DATABASE_URL = 'postgresql://'+'$CRED_USER'+':'+'$CRED_PASS'+'@'+'${PG_SERVER}'+ '/' +'$DATABASE'
                APP_SETTINGS = 'application.config.DevelopmentConfig'
             }
             steps {
