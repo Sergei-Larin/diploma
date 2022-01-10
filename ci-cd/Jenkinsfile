@@ -4,7 +4,7 @@ pipeline {
     agent any
     environment {
        DOCKER_CREDENTIAL_ID = 'docker-hub-credentials'
-       DOCKER_REGISTRY_BUILD_URL = 'registry-1.docker.io/sergeo1024'
+       DOCKER_REGISTRY_BUILD_URL = 'sergeo1024'
        DOCKER_REGISTRY_URL = 'https://registry-1.docker.io/v2/'
        APP_NAME = 'web_app'
        IMAGE = '$DOCKER_REGISTRY_BUILD_URL' + "/" + '$APP_NAME' + ":"
