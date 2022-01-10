@@ -19,7 +19,7 @@ pipeline {
                     docker.withRegistry(env.DOCKER_REGISTRY_URL, env.DOCKER_CREDENTIAL_ID) {
                         dockerImage = docker.build(env.IMAGE+env.GIT_COMMIT.take(7))
                         dockerImage.push()
-                        if(env.BRANCH_NAME == main){
+                        if(env.BRANCH_NAME == 'main'){
                             dockerImage.push('release')
                         }
                     }
