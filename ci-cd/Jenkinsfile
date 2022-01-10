@@ -1,0 +1,119 @@
+def dockerImage
+
+pipeline {
+    agent any
+    environment {
+       DOCKER_CREDENTIAL_ID = 'docker-hub-credentials'
+       DOCKER_REGISTRY_BUILD_URL = 'registry-1.docker.io/sergeo1024'
+       DOCKER_REGISTRY_URL = 'https://registry-1.docker.io/v2/'
+       APP_NAME = 'web_app'
+       IMAGE = '$DOCKER_REGISTRY_BUILD_URL' + "/" + '$APP_NAME' + ":"
+    }
+    
+    stages {
+
+        stage('Build image') {
+            steps {
+                script {
+                    println("=============================== STEP: Building project from commit: "+env.GIT_COMMIT.take(7) + " ===============================")
+                    docker.withRegistry(env.DOCKER_REGISTRY_URL, env.DOCKER_CREDENTIAL_ID) {
+                        dockerImage = docker.build(env.IMAGE+env.GIT_COMMIT.take(7))
+                        dockerImage.push()
+                        if(env.BRANCH_NAME == main){
+                            dockerImage.push('release')
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Testing'){
+            environment {
+               DATABASE = 'stage_diploma_db'
+               POSTGRES_CRED = credentials('postgres-id')
+               CRED_USER = '$POSTGRES_CRED_USR'
+               CRED_PASS = '$POSTGRES_CRED_PSW'
+               STAGING_DATABASE_URL = 'postgresql://'+'$CRED_USER'+':'+'$CRED_PASS'+'@'+'$PG_SERVER'+ '/' +'$DATABASE'
+               APP_SETTINGS = 'application.config.DevelopmentConfig'
+            }
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    script {
+                        println("=============================== STEP: Testing project ===============================")
+                        def imageTest= docker.build(env.IMAGE+'test', "--no-cache -f Dockerfile.test .")
+                        parallel(
+                            'Unit Tests': {
+                                imageTest.inside{
+                                    sh 'python unit_tests.py'
+                                }
+                            },
+                            'Lint *.py Tests': {
+                                imageTest.inside{
+                                    sh 'pylint *.py'
+                                }
+                            },
+                            'Lint */*.py Tests': {
+                                imageTest.inside{
+                                    sh 'pylint */*.py'
+                                }
+                            },
+                            'Lint */*/*.py Tests': {
+                                imageTest.inside{
+                                    sh 'pylint */*/*.py'
+                                }
+                            },
+                            'Quality Tests': {
+                                withSonarQubeEnv(credentialsId: 'sonar-token', installationName: 'SonarQube') {
+                                    sh  "/var/jenkins_home/tools/hudson.plugins.sonar.SonarRunnerInstallation/Sonar-scanner/bin/sonar-scanner " +
+                                        "-Dsonar.projectKey=${env.APP_NAME} " +
+                                        "-Dsonar.projectName=${env.APP_NAME} " +
+                                        "-Dsonar.sources=. " +
+                                        "-Dsonar.coverage.dtdVerification=false " +
+                                        "-Dsonar.projectVersion=${env.COMMIT} " +
+                                        "-Dsonar.python.coverage.reportPaths=/sonar/coverage.xml "+
+                                        "-Dsonar.python.xunit.reportPath=/sonar/result.xml "
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to dev') {
+            when {
+                branch 'develop' 
+            }
+            steps {
+                println("=============================== STEP: Deploy to Dev ===============================")
+                echo 'Deploying...'
+            }
+        }
+        
+        stage('Deploy to stage') {
+            when {
+                branch 'stage' 
+            }
+            steps {
+                println("=============================== STEP: Deploy to Stage ===============================")
+                echo 'Deploying...'
+            }
+        }
+        
+        stage('Deploy to prod') {
+            when {
+                branch 'main' 
+            }
+            steps {
+                println("=============================== STEP: Deploy to production ===============================")
+                echo 'Deploying...'
+            }
+        }
+    }
+
+    post {
+        always { cleanWs() }
+        success { echo 'I succeeeded' }
+        failure { echo 'I failed' }
+    }
+}
