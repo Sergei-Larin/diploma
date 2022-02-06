@@ -1,52 +1,47 @@
-def dockerImage
+def get_image_name(){
+    if(env.TAG_NAME){
+        image = "${env.DOCKER_REGISTRY_BUILD_URL}" + ":release"
+        isStage = false
+    } else if(env.BRANCH_NAME ==~ /release-*[0-9].[0-9].[0-9]/) {
+        image = "${env.DOCKER_REGISTRY_BUILD_URL}" + ":stage"
+        isStage = true
+    } else {
+        image = "${env.DOCKER_REGISTRY_BUILD_URL}" + ":dev"
+        isStage = false
+    }
+    return image
+}
+
+properties([
+    parameters([
+            string(name: "DOCKER_CREDENTIAL_ID", defaultValue: "ecr:eu-central-1:aws-credentials-id", description: "ECR credentials"),
+            string(name: "DOCKER_REGISTRY_BUILD_URL", defaultValue: "diploma", description: "Registry name for images"),
+            string(name: "APP_POSTGRES_CREDENTIAL_ID", defaultValue: "postgres-id", description: "ID postgres credential"),
+    ])
+])
 
 pipeline {
-    agent any
+    agent any    
     environment {
-       DOCKER_CREDENTIAL_ID = 'docker-hub-credentials'
-       DOCKER_REGISTRY_BUILD_URL = 'sergeo1024'
-       DOCKER_REGISTRY_URL = 'https://registry-1.docker.io/v2/'
-       APP_NAME = 'web_app'
-       IMAGE = '$DOCKER_REGISTRY_BUILD_URL' + "/" + '$APP_NAME' + ":"
+        IMAGE_TESTING = "${env.DOCKER_REGISTRY_BUILD_URL}" + ":testing"
+        APP_NAME      = "${env.DOCKER_REGISTRY_BUILD_URL}"
     }
-    
     stages {
-
-        stage('Build image') {
+        stage('Preparations') {
             steps {
-                script {
-                    println("=============================== STEP: Building project from commit: "+env.GIT_COMMIT.take(7) + " ===============================")
-                    docker.withRegistry(env.DOCKER_REGISTRY_URL, env.DOCKER_CREDENTIAL_ID) {
-                        dockerImage = docker.build(env.IMAGE+env.GIT_COMMIT.take(7))
-                        dockerImage.push()
-                        if(env.BRANCH_NAME == 'main'){
-                            dockerImage.push('release')
-                        }
-                    }
-                }
+                println("=============================== STEP: Initialize parameters as environment variables due to https://issues.jenkins-ci.org/browse/JENKINS-41929 ===============================")
+                evaluate """${def script = ""; params.each { k, v -> script += "env.${k} = '''${v}'''\n" }; return script}"""
             }
         }
 
         stage('Testing'){
-            environment {
-               DATABASE = 'stage_diploma_db'
-               POSTGRES_CRED = credentials('postgres-id')
-               CRED_USER = '$POSTGRES_CRED_USR'
-               CRED_PASS = '$POSTGRES_CRED_PSW'
-               STAGING_DATABASE_URL = 'postgresql://'+'$CRED_USER'+':'+'$CRED_PASS'+'@'+'${PG_SERVER}'+ '/' +'$DATABASE'
-               APP_SETTINGS = 'application.config.DevelopmentConfig'
-            }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     script {
                         println("=============================== STEP: Testing project ===============================")
-                        def imageTest= docker.build(env.IMAGE+'test', "--no-cache -f Dockerfile.test .")
+                        println("${IMAGE_TESTING}")
+                        def imageTest= docker.build(env.IMAGE_TESTING, "--no-cache -f Dockerfile.test .")
                         parallel(
-                            'Unit Tests': {
-                                imageTest.inside{
-                                    sh 'python unit_tests.py'
-                                }
-                            },
                             'Lint *.py Tests': {
                                 imageTest.inside{
                                     sh 'pylint *.py'
@@ -63,8 +58,9 @@ pipeline {
                                 }
                             },
                             'Quality Tests': {
+                                def scannerHome = tool 'sonar-scanner'    
                                 withSonarQubeEnv(credentialsId: 'sonar-token', installationName: 'SonarQube') {
-                                    sh  "/var/jenkins_home/tools/hudson.plugins.sonar.SonarRunnerInstallation/Sonar-scanner/bin/sonar-scanner " +
+                                    sh  "${scannerHome}/bin/sonar-scanner " +
                                         "-Dsonar.projectKey=${env.APP_NAME} " +
                                         "-Dsonar.projectName=${env.APP_NAME} " +
                                         "-Dsonar.sources=. " +
@@ -80,19 +76,34 @@ pipeline {
             }
         }
 
+        stage('Build image') {
+            steps {
+                script {
+                    println("=============================== STEP: Building project from commit: "+env.GIT_COMMIT.take(7) + " ===============================")		
+                    IMAGE_NAME = get_image_name()       
+                    docker.withRegistry("${DOCKER_REGISTRY}", env.DOCKER_CREDENTIAL_ID) {
+                        dockerImage = docker.build("${IMAGE_NAME}","--no-cache -f Dockerfile .")
+                            //dockerImage.push()
+                    }
+                }
+            }
+        }
+
         stage('Deploy to dev') {
             when {
                 branch 'develop' 
             }
             steps {
                 println("=============================== STEP: Deploy to Dev ===============================")
-                echo 'Deploying...'
+                    echo 'Deploying...'
             }
         }
-        
+            
         stage('Deploy to stage') {
             when {
-                branch 'stage' 
+                expression {    
+                    return isStage	
+                }
             }
             steps {
                 println("=============================== STEP: Deploy to Stage ===============================")
@@ -102,7 +113,9 @@ pipeline {
         
         stage('Deploy to prod') {
             when {
-                branch 'main' 
+                expression {
+                   return env.TAG_NAME;
+                }
             }
             steps {
                 println("=============================== STEP: Deploy to production ===============================")
@@ -112,7 +125,15 @@ pipeline {
     }
 
     post {
-        always { cleanWs() }
+        always { 
+                cleanWs() 
+                script {
+                    println("=============================== AFTERSTEPS: Cleanup ===============================")
+                    def IMAGE_NAME = get_image_name()
+                    sh "docker rmi $IMAGE_NAME $IMAGE_TESTING -f"
+                    sh "docker image prune -f"    
+                }
+        }
         success { echo 'I succeeeded' }
         failure { echo 'I failed' }
     }
