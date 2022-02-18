@@ -1,17 +1,5 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# Proviision AWS environment in any Region for diploma project
-# Create :
-#	- VPC 
-#	- PUBLIC AND PRIVATE SUBNETS
-#	- ROUTE TABLE FOR SUBNETS
-#	- SECURITY GROUPS FOR SERVICES
-#	- DATABASE INSTANCE
-#	- JENKINS EC2 INSTANCE
-# 	- SONARQUBE EC2 INSTANCE
-#	- ELASTIC KUBERNETES SERVICE
-#	- AMAZON ECR
-#
-# Made by Sergei Larin
+# Backend TF state
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
