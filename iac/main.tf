@@ -335,6 +335,7 @@ resource "aws_instance" "jenkins" {
 			"sed -i 's/sonar_ip/${aws_instance.sonar.private_ip}/g' .env_jenkins",
 			"sed -i 's/sonar_token/${data.local_file.sonar-token.content}/g' .env_jenkins",
 			"sed -i 's/jenkins_ip/${aws_instance.jenkins.public_ip}/g' .env_jenkins",
+			"sed -i 's/k8s_endpoint/${data.aws_eks_cluster.cluster.endpoint}/g' .env_jenkins",
 			"sudo /usr/local/bin/docker-compose up --detach"
 		]
     }	
@@ -352,7 +353,8 @@ resource "aws_instance" "jenkins" {
 		aws_db_instance.default,
 		aws_ssm_parameter.rds_password,
 		aws_instance.sonar,
-		null_resource.preparefile
+		null_resource.preparefile,
+		aws_eks_cluster.eks_cluster
 		]
 }
 
@@ -583,10 +585,6 @@ resource "aws_eks_node_group" "node" {
 
 
 data "aws_eks_cluster" "cluster" {
-	name = aws_eks_cluster.eks_cluster.name
-}
-
-data "aws_eks_cluster_auth" "cluster" {
 	name = aws_eks_cluster.eks_cluster.name
 }
 

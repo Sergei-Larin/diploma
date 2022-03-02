@@ -23,6 +23,11 @@ credentials:
           password: ${GITHUB_TOKEN_ID}
           scope: GLOBAL
           username: "jenkins-user"
+      - string:
+          description: "kubernetes Token"
+          id: "k8s-sa-id"
+          scope: GLOBAL
+          secret: ${K8S_TOKEN_ID}
 jenkins:
   agentProtocols:
   - "JNLP4-connect"
@@ -30,6 +35,16 @@ jenkins:
   authorizationStrategy:
     loggedInUsersCanDoAnything:
       allowAnonymousRead: false
+  clouds:
+  - kubernetes:
+      containerCap: 10
+      containerCapStr: "10"
+      credentialsId: "k8s-sa-id"
+      name: "kubernetes"
+      namespace: "default"
+      serverCertificate: ""
+      serverUrl: ${K8S_URL}
+      skipTlsVerify: true
   crumbIssuer:
     standard:
       excludeClientIPFromCrumb: false
@@ -39,6 +54,8 @@ jenkins:
       env:
       - key: "DOCKER_REGISTRY"
         value: ${DOCKER_REGISTRY}
+      - key: "K8S_SERVER"
+        value: ${K8S_URL}
       - key: "PG_SERVER"
         value: ${PG_SERVER}
   labelAtoms:

@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    some-label: pod-runner
+spec:
+  containers:
+  - name: python
+    image: python:3.9
+    command:
+    - cat
+    tty: true
+  - name: sonar
+    image: openjdk:19-jdk-alpine3.15
+    command:
+    - cat
+    tty: true
+  - name: kubectl
+    image: gcr.io/cloud-builders/kubectl
+    command:
+    - cat
+    tty: true
+  - name: docker-client
+    image: docker:19.03.1
+    command:
+    - cat
+    env:
+      - name: DOCKER_HOST
+        value: tcp://localhost:2375
+    tty: true
+  - name: docker-daemon
+    image: docker:19.03.1-dind 
+    env:
+      - name: DOCKER_TLS_CERTDIR
+        value: "" 
+    securityContext:
+      privileged: true
+    volumeMounts:
+      - name: cache
+        mountPath: /var/lib/docker
+  volumes:
+    - name: cache
+      hostPath:
+        path: /tmp
+        type: Directory
