@@ -329,13 +329,14 @@ resource "aws_instance" "jenkins" {
 			"sed -i 's/region_name/${data.aws_region.current.name}/g' .env_jenkins",
 			"sed -i 's/pg_entrypoint/${aws_db_instance.default.address}/g' .env_jenkins",
 			"sed -i 's/git_token/${var.github_token}/g' .env_jenkins",
-			"sed -i 's/pg_password/${data.aws_ssm_parameter.master_rds_password.value}/g' .env_jenkins",
+			"sed -i 's|pg_password|${data.aws_ssm_parameter.master_rds_password.value}|g' .env_jenkins",
 			"sed -i 's/aws_id/${var.aws_id}/g' .env_jenkins",
 			"sed -i 's|aws_key|${var.aws_key}|g' .env_jenkins",
 			"sed -i 's/sonar_ip/${aws_instance.sonar.private_ip}/g' .env_jenkins",
-			"sed -i 's/sonar_token/${data.local_file.sonar-token.content}/g' .env_jenkins",
+			"sed -i 's|sonar_token|${data.local_file.sonar-token.content}|g' .env_jenkins",
 			"sed -i 's/jenkins_ip/${aws_instance.jenkins.public_ip}/g' .env_jenkins",
-			"sed -i 's/k8s_endpoint/${data.aws_eks_cluster.cluster.endpoint}/g' .env_jenkins",
+			"sed -i 's|k8s_endpoint|${data.aws_eks_cluster.cluster.endpoint}|g' .env_jenkins",
+			"sed -i 's|app_key|${var.app_key}|g' .env_jenkins",
 			"sudo /usr/local/bin/docker-compose up --detach"
 		]
     }	
@@ -567,7 +568,7 @@ resource "aws_eks_node_group" "node" {
 	tags =  merge (var.common_tags, {Name = "Node k8s"})
 
 	scaling_config {
-		desired_size = 1
+		desired_size = 2
 		max_size     = 2
 		min_size     = 1
 	}
