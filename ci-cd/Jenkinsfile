@@ -118,6 +118,8 @@ pipeline {
                   sh "sed -i 's|PORT|${servicePort}|' k8s/manifest.yaml"
                   sh "kubectl apply -f k8s/manifest.yaml"
                   sh 'kubectl --namespace=prod get po'
+                }
+              }
             }
           }
         }
