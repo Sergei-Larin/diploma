@@ -14,7 +14,7 @@ metadata:
   labels:
     app: APP
   name: APP-deployment
-  namespace: SERVICENAME
+  namespace: NAMESPACE
 spec:
   selector:
     matchLabels:
