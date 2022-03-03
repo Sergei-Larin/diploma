@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: APP-config-map
+  namespace: NAMESPACE
 data:
   app_settings: "APP_CONFIG"
   dev_database_url: "postgresql://DB_USER:DB_PWD@DB_NAME/APP"
@@ -83,6 +84,7 @@ apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
     name: APP-hpa
+    namespace: NAMESPACE
 spec:
     scaleTargetRef:
         apiVersion: apps/v1
