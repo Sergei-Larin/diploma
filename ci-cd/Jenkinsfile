@@ -100,7 +100,7 @@ pipeline {
         script {
           def app_config       = 'application.config.DevelopmentConfig'
           def clusterNamespace = 'dev'
-          def servicePort  = '80'
+          def servicePort  = 80
           IMAGE_NAME = get_image_name()
           container('kubectl') {
             withKubeConfig([credentialsId: env.K8S_CREDENTIAL_ID, serverUrl: "${K8S_SERVER}"]) {
@@ -136,7 +136,7 @@ pipeline {
         script {
           def app_config       = 'application.config.ProductionConfig'
           def clusterNamespace = 'prod'
-          def servicePort  = '80'
+          def servicePort  = 80
           container('kubectl') {
             withKubeConfig([credentialsId: env.K8S_CREDENTIAL_ID, serverUrl: "${K8S_SERVER}"]) {
               withCredentials([usernamePassword(credentialsId: 'postgres-id', usernameVariable: 'DB_USERNAME', passwordVariable: 'DB_PASSWORD')]) {
