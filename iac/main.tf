@@ -330,6 +330,7 @@ resource "aws_instance" "jenkins" {
 			"sed -i 's/pg_entrypoint/${aws_db_instance.default.address}/g' .env_jenkins",
 			"sed -i 's/git_token/${var.github_token}/g' .env_jenkins",
 			"sed -i 's|pg_password|${data.aws_ssm_parameter.master_rds_password.value}|g' .env_jenkins",
+			"sed -i 's|pg_username|${aws_db_instance.default.username}|g' .env_jenkins",
 			"sed -i 's/aws_id/${var.aws_id}/g' .env_jenkins",
 			"sed -i 's|aws_key|${var.aws_key}|g' .env_jenkins",
 			"sed -i 's/sonar_ip/${aws_instance.sonar.private_ip}/g' .env_jenkins",

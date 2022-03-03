@@ -11,7 +11,7 @@ credentials:
           id: "postgres-id"
           password: ${POSTGRES_ID}
           scope: GLOBAL
-          username: "postgres"
+          username: ${POSTGRES_USER}
       - aws:
           accessKey: ${AWS_ID}
           id: "aws-credentials-id"
