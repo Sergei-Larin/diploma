@@ -77,7 +77,7 @@ spec:
   selector:
     app: APP
   ports:
-    - port: PORTNAME
+    - port: PORT
       targetPort: 5000
 ---
 apiVersion: autoscaling/v2beta2
