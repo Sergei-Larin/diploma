@@ -325,6 +325,8 @@ resource "aws_instance" "jenkins" {
 			"sudo usermod -a -G docker ec2-user",
 			"sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose",
 			"sudo chmod +x /usr/local/bin/docker-compose",
+			"sed -i 's/admin-name/${var.jenkins_admin_name}/g' .env_jenkins",
+			"sed -i 's/admin-pass/${var.jenkins_admin_name_pass}/g' .env_jenkins",
 			"sed -i 's/account_id/${data.aws_caller_identity.current.account_id}/g' .env_jenkins",
 			"sed -i 's/region_name/${data.aws_region.current.name}/g' .env_jenkins",
 			"sed -i 's/pg_entrypoint/${aws_db_instance.default.address}/g' .env_jenkins",

@@ -82,6 +82,15 @@ variable "app_key" {
 	type 		= string
 }
 
+variable "jenkins_admin_name" {    
+	description = "Main admin name in jenkins iac integration"
+	type 		= string
+}
+
+variable "jenkins_admin_name_pass" {    
+	description = "Main admin password in jenkins iac integration"
+	type 		= string
+}
 # ---------------------------------------------------------------------------------------------------------------------
 # DATABASE
 # ---------------------------------------------------------------------------------------------------------------------
