@@ -4,13 +4,13 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
-from application.models import *
-from application.ui.views import ui
-
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 
 db = SQLAlchemy(app)
+
+from application.models import *
+from application.ui.views import ui
 
 manager = LoginManager(app)
 
