@@ -13,3 +13,4 @@ disable=
     too-many-branches,
     too-many-locals,
     too-many-statements,
+    wrong-import-position,
