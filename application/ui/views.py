@@ -18,7 +18,14 @@ def insert_data_from_api(search):
     record_offset = 0
     max_offset = 200
     while record_count > 0:
-        response = (requests.get('https://itunes.apple.com/search?term=' + str(search) + '&offset=' + str(record_offset) + '&limit=' + str(max_offset-1))).json()
+        response = (requests.get(
+            'https://itunes.apple.com/search?term=' + 
+            str(search) + 
+            '&offset=' + 
+            str(record_offset) + 
+            '&limit=' + 
+            str(max_offset-1))
+        ).json()
         if response:
             record_count = response["resultCount"]
             total_count += record_count

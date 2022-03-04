@@ -41,13 +41,13 @@ pipeline {
               sh 'pip3 install --upgrade pip install pylint==2.12.2'
               parallel(
                 'Lint *.py Tests': {
-                  sh 'pylint *.py'
+                  sh 'pylint *.py --disable=missing-docstring'
                 },
                 'Lint */*.py Tests': {
-                  sh 'pylint */*.py'
+                  sh 'pylint */*.py --disable=missing-docstring'
                 },
                 'Lint */*/*.py Tests': {
-                  sh 'pylint */*/*.py'
+                  sh 'pylint */*/*.py --disable=missing-docstring'
                 }
               )
             }
