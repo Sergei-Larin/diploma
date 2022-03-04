@@ -38,16 +38,16 @@ pipeline {
           script {
             container('python') {
               println("=============================== STEP: Testing project ===============================")
-              sh 'pip3 install --upgrade pip install pylint==2.12.2'
+              sh 'pip3 install --upgrade pip install -r requirements.txt'
               parallel(
                 'Lint *.py Tests': {
-                  sh 'pylint *.py --disable=missing-docstring, broad-except'
+                  sh 'pylint *.py --disable=missing-docstring --disable=broad-except'
                 },
                 'Lint */*.py Tests': {
-                  sh 'pylint */*.py --disable=missing-docstring, broad-except'
+                  sh 'pylint */*.py --disable=missing-docstring --disable=broad-except'
                 },
                 'Lint */*/*.py Tests': {
-                  sh 'pylint */*/*.py --disable=missing-docstring, broad-except'
+                  sh 'pylint */*/*.py --disable=missing-docstring --disable=broad-except'
                 }
               )
             }
