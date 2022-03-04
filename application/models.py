@@ -1,8 +1,9 @@
+from datetime import datetime
+from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import UserMixin
 
 from application import db, manager
-from werkzeug.security import check_password_hash, generate_password_hash
-from datetime import datetime
+
 
 
 class User(db.Model, UserMixin):
@@ -42,7 +43,8 @@ class Data(db.Model):
     release_date = db.Column(db.String(), nullable=True)
     created_on = db.Column(db.DateTime(35), default=datetime.now, nullable=False)
 
-    def __init__(self, kind, collection_name, track_name, collection_price, track_price, primary_genre_name, track_count, track_number, release_date):
+    def __init__(self, kind, collection_name, track_name, collection_price, \
+                 track_price, primary_genre_name, track_count, track_number, release_date):
         self.kind = kind
         self.collection_name = collection_name
         self.track_name = track_name
@@ -52,7 +54,3 @@ class Data(db.Model):
         self.track_count = track_count
         self.track_number = track_number
         self.release_date = release_date
-
-
-
-
