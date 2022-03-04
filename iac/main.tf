@@ -195,7 +195,7 @@ resource "aws_security_group_rule" "allow_db_access" {
 resource "random_string" "rds_password" {
 	length 			 = 12
 	special 		 = true
-	override_special = "!#$&"
+	override_special = "!#$"
 }
 
 resource "aws_ssm_parameter" "rds_password" {
