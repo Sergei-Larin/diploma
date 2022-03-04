@@ -156,12 +156,11 @@ def register_post():
                 "POST /register HTTP/1.1" 200 - \
                 Register successful')
             return redirect(url_for('ui.login_page'))
-        else:
-            flash('Fill in all the fields')
-            print(f'ip:{request.remote_addr} - \
+        flash('Fill in all the fields')
+        print(f'ip:{request.remote_addr} - \
             "POST /register HTTP/1.1" 400 - \
             not all fields are filled in ')
-            return redirect(url_for('ui.register')),400
+        return redirect(url_for('ui.register')),400
     except Exception as error_message:
         print(
             f'ip:{request.remote_addr}:user:{login} - \
@@ -193,8 +192,7 @@ def login_page_post():
             if user and check_password_hash(user.password, password):
                 login_user(user)
                 return redirect(url_for('ui.main'))
-            else:
-                flash('Wrong login or password')
+            flash('Wrong login or password')
         else:
             flash('Fill in all the fields')
         return redirect(url_for('ui.login_page'))
@@ -230,8 +228,7 @@ def update():
             total_count = insert_data_from_api('Pink+Floyd')
             flash('Total uploaded: '+str(total_count))
             return render_template('update.html')
-        else:
-            return render_template('update.html')
+        return render_template('update.html')
 
     except Exception as error_message:
         print(
@@ -272,8 +269,7 @@ def get_sort_data():
                     count += 1
             flash("Find results: "+str(count))
             return render_template('sort_data.html', data_all=result)
-        else:
-            return render_template('sort_data.html')
+        return render_template('sort_data.html')
     except Exception as error_message:
         print(
             f'ip:{request.remote_addr} - \
