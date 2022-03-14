@@ -8,10 +8,15 @@ credentials:
           scope: GLOBAL
           secret: ${SONAR_TOKEN}
       - usernamePassword:
-          id: "postgres-id"
-          password: ${POSTGRES_ID}
+          id: "dev-postgres-id"
+          password: ${DEV_POSTGRES_ID}
           scope: GLOBAL
-          username: ${POSTGRES_USER}
+          username: ${DEV_POSTGRES_USER}
+      - usernamePassword:
+          id: "prod-postgres-id"
+          password: ${PROD_POSTGRES_ID}
+          scope: GLOBAL
+          username: ${PROD_POSTGRES_USER}          
       - aws:
           accessKey: ${AWS_ID}
           id: "aws-credentials-id"
@@ -80,8 +85,10 @@ jenkins:
         value: ${DOCKER_REGISTRY}
       - key: "K8S_SERVER"
         value: ${K8S_URL}
-      - key: "PG_SERVER"
-        value: ${PG_SERVER}
+      - key: "DEV_PG_SERVER"
+        value: ${DEV_PG_SERVER}
+      - key: "PROD_PG_SERVER"
+        value: ${PROD_PG_SERVER}
   labelAtoms:
   - name: "built-in"
   markupFormatter: "plainText"

@@ -49,6 +49,10 @@ data "aws_ami" "latest_aws_linux" {
 	}
 }
 
+resource "aws_key_pair" "ssh-key" {
+	key_name   = "aws-key"
+	public_key = file(var.aws_public_key)
+}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # VPC
@@ -63,6 +67,7 @@ resource "aws_vpc" "vpc" {
     
 	tags =  merge (var.common_tags, {Name = "VPC ${var.vpc_cidr_block}"})
 }
+
 # ---------------------------------------------------------------------------------------------------------------------
 # PUBLIC AND PRIVATE SUBNETS
 # ---------------------------------------------------------------------------------------------------------------------
@@ -174,9 +179,7 @@ resource "aws_security_group" "allow_ssh_sg" {
 	tags =  merge (var.common_tags, {Name = "Allow connection from IP"})	
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
-# DATABASE INSTANCE
-# ---------------------------------------------------------------------------------------------------------------------
+# FOR DATABASE
 
 resource "aws_security_group" "db_instance" {
 	name   = "Database SG"
@@ -192,50 +195,89 @@ resource "aws_security_group_rule" "allow_db_access" {
 	cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "random_string" "rds_password" {
-	length 			 = 12
+resource "aws_db_subnet_group" "db_subnets" {
+	name       = "db_subnet"
+	subnet_ids = [aws_subnet.subnet-private-a.id, aws_subnet.subnet-private-b.id]
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# DEVE DATABASE INSTANCE
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "random_string" "dev_rds_password" {
+	length 			 = 15
 	special 		 = true
 	override_special = "!#$"
 }
 
-resource "aws_ssm_parameter" "rds_password" {
-	name 		= var.rds_pass_key
-	description = "Master Password for RDS"
+resource "aws_ssm_parameter" "dev_rds_password" {
+	name 		= var.dev_rds_pass_key
+	description = "Master Password for dev RDS"
 	type 		= "SecureString"
-	value		= random_string.rds_password.result
+	value		= random_string.dev_rds_password.result
 }
 
-data "aws_ssm_parameter" "master_rds_password"{
-	name 		= var.rds_pass_key
-	depends_on = [aws_ssm_parameter.rds_password]
+data "aws_ssm_parameter" "dev_master_rds_password"{
+	name 		= var.dev_rds_pass_key
+	depends_on = [aws_ssm_parameter.dev_rds_password]
 }
 
-resource "aws_db_subnet_group" "db_subnets" {
-	name       = "education"
-	subnet_ids = [aws_subnet.subnet-private-a.id, aws_subnet.subnet-private-b.id]
-}
-
-resource "aws_db_instance" "default" {
-	identifier             = var.name
+resource "aws_db_instance" "dev" {
+	identifier             = var.dev_name
 	allocated_storage      = var.allocated_storage
 	engine                 = var.engine_name
 	engine_version         = var.engine_version
 	port                   = var.port
-	name                   = var.db_name
+	name                   = var.dev_db_name
 	username               = var.db_username
-	password               = data.aws_ssm_parameter.master_rds_password.value
+	password               = data.aws_ssm_parameter.dev_master_rds_password.value
 	instance_class         = var.instance_class
 	db_subnet_group_name   = aws_db_subnet_group.db_subnets.id
 	vpc_security_group_ids = [aws_security_group.db_instance.id]
 	skip_final_snapshot    = true
 	publicly_accessible    = true
 
-	tags =  merge (var.common_tags, {Name = "RDS database"})	
+	tags =  merge (var.common_tags, {Name = "Dev RDS database"})	
 }
 
-resource "aws_key_pair" "ssh-key" {
-	key_name   = "aws-key"
-	public_key = file(var.aws_public_key)
+# ---------------------------------------------------------------------------------------------------------------------
+# PRODUCTION DATABASE INSTANCE
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "random_string" "prod_rds_password" {
+	length 			 = 15
+	special 		 = true
+	override_special = "!#$"
+}
+
+resource "aws_ssm_parameter" "prod_rds_password" {
+	name 		= var.prod_rds_pass_key
+	description = "Master Password for prod RDS"
+	type 		= "SecureString"
+	value		= random_string.prod_rds_password.result
+}
+
+data "aws_ssm_parameter" "prod_master_rds_password"{
+	name 		= var.prod_rds_pass_key
+	depends_on = [aws_ssm_parameter.prod_rds_password]
+}
+
+resource "aws_db_instance" "prod" {
+	identifier             = var.prod_name
+	allocated_storage      = var.allocated_storage
+	engine                 = var.engine_name
+	engine_version         = var.engine_version
+	port                   = var.port
+	name                   = var.prod_db_name
+	username               = var.db_username
+	password               = data.aws_ssm_parameter.prod_master_rds_password.value
+	instance_class         = var.instance_class
+	db_subnet_group_name   = aws_db_subnet_group.db_subnets.id
+	vpc_security_group_ids = [aws_security_group.db_instance.id]
+	skip_final_snapshot    = true
+	publicly_accessible    = true
+
+	tags =  merge (var.common_tags, {Name = "Prod RDS database"})	
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -329,10 +371,13 @@ resource "aws_instance" "jenkins" {
 			"sed -i 's/admin-pass/${var.jenkins_admin_name_pass}/g' .env_jenkins",
 			"sed -i 's/account_id/${data.aws_caller_identity.current.account_id}/g' .env_jenkins",
 			"sed -i 's/region_name/${data.aws_region.current.name}/g' .env_jenkins",
-			"sed -i 's/pg_entrypoint/${aws_db_instance.default.address}/g' .env_jenkins",
 			"sed -i 's/git_token/${var.github_token}/g' .env_jenkins",
-			"sed -i 's|pg_password|${data.aws_ssm_parameter.master_rds_password.value}|g' .env_jenkins",
-			"sed -i 's|pg_username|${aws_db_instance.default.username}|g' .env_jenkins",
+			"sed -i 's/dev_pg_entrypoint/${aws_db_instance.dev.address}/g' .env_jenkins",
+			"sed -i 's|dev_pg_password|${data.aws_ssm_parameter.dev_master_rds_password.value}|g' .env_jenkins",
+			"sed -i 's|dev_pg_username|${aws_db_instance.dev.username}|g' .env_jenkins",
+			"sed -i 's/prod_pg_entrypoint/${aws_db_instance.prod.address}/g' .env_jenkins",
+			"sed -i 's|prod_pg_password|${data.aws_ssm_parameter.prod_master_rds_password.value}|g' .env_jenkins",
+			"sed -i 's|prod_pg_username|${aws_db_instance.prod.username}|g' .env_jenkins",			
 			"sed -i 's/aws_id/${var.aws_id}/g' .env_jenkins",
 			"sed -i 's|aws_key|${var.aws_key}|g' .env_jenkins",
 			"sed -i 's/sonar_ip/${aws_instance.sonar.private_ip}/g' .env_jenkins",
@@ -354,8 +399,10 @@ resource "aws_instance" "jenkins" {
 	
 	depends_on = [
 		aws_ecr_repository.ecr_registry,
-		aws_db_instance.default,
-		aws_ssm_parameter.rds_password,
+		aws_db_instance.dev,
+		aws_db_instance.prod,
+		aws_ssm_parameter.dev_rds_password,
+		aws_ssm_parameter.prod_rds_password,
 		aws_instance.sonar,
 		null_resource.preparefile,
 		aws_eks_cluster.eks_cluster

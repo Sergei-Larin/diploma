@@ -22,9 +22,22 @@ output "sonar_server_public_ip" {
   value = aws_instance.sonar.public_ip
 }
 
-output "rds_replica_connection_parameters" {
-  description = "RDS replica instance connection parameters"
-  value       = "-h ${aws_db_instance.default.address} -p ${aws_db_instance.default.port} -U ${aws_db_instance.default.username} ${var.db_name}"
+# ---------------------------------------------------------------------------------------------------------------------
+# DEVELOP DATABASE INSTANCE
+# ---------------------------------------------------------------------------------------------------------------------
+
+output "dev_rds_replica_connection_parameters" {
+  description = "DEV RDS replica instance connection parameters"
+  value       = "-h ${aws_db_instance.dev.address} -p ${aws_db_instance.dev.port} -U ${aws_db_instance.dev.username} ${var.dev_db_name}"
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# PRODUCTION DATABASE INSTANCE
+# ---------------------------------------------------------------------------------------------------------------------
+
+output "prod_rds_replica_connection_parameters" {
+  description = "PROD RDS replica instance connection parameters"
+  value       = "-h ${aws_db_instance.prod.address} -p ${aws_db_instance.prod.port} -U ${aws_db_instance.prod.username} ${var.prod_db_name}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
