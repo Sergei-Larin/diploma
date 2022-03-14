@@ -104,11 +104,13 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: "APP_NAME-migrate-job"
+  namespace: NAMESPACE
 spec:
   backoffLimit: 2
   template:
     metadata:
       name: "APP_NAME-migrate-job"
+      
     spec:
       restartPolicy: Never
       activeDeadlineSeconds: 240
