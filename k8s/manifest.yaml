@@ -110,7 +110,6 @@ spec:
   template:
     metadata:
       name: "APP_NAME-migrate-job"
-      
     spec:
       restartPolicy: Never
       activeDeadlineSeconds: 240

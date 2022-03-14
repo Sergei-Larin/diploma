@@ -14,3 +14,6 @@ disable=
     too-many-locals,
     too-many-statements,
     wrong-import-position,
+    no-member,
+    unused-argument,
+    redefined-outer-name,
