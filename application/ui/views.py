@@ -18,7 +18,14 @@ def insert_data_from_api(search):
     record_offset = 0
     max_offset = 200
     while record_count > 0:
-        response = (requests.get('https://itunes.apple.com/search?term=' + str(search) + '&offset=' + str(record_offset) + '&limit=' + str(max_offset-1))).json()
+        response = (requests.get(
+            'https://itunes.apple.com/search?term='+
+            str(search)+
+            '&offset='+
+            str(record_offset)+
+            '&limit='+
+            str(max_offset-1))
+        ).json()
         if response:
             record_count = response["resultCount"]
             total_count += record_count
@@ -72,7 +79,7 @@ def insert_data_from_api(search):
                 else:
                     release_date = None
 
-                d = Data(
+                row_data = Data(
                     kind=kind,
                     collection_name=collection_name,
                     track_name=track_name,
@@ -83,14 +90,14 @@ def insert_data_from_api(search):
                     track_number=track_number,
                     release_date=release_date,
                 )
-                session.add(d)
+                session.add(row_data)
                 session.commit()
         else:
             print('Response Failed')
     return total_count
 
 
-def cleanDatabase(data):
+def clean_database(data):
     num_rows_deleted = db.session.query(data).delete()
     db.session.commit()
     return num_rows_deleted
@@ -100,20 +107,24 @@ def cleanDatabase(data):
 def main():
     try:
         return render_template('index.html')
-    except Exception as er:
+    except Exception as error_message:
         print(
-            f'ip:{request.remote_addr} - "GET / HTTP/1.1" 400 - failed with errors: {er}')
-        return {'Failed with errors': str(er)}, 400
+            f'ip:{request.remote_addr} - \
+            "GET / HTTP/1.1" 400 - \
+            failed with errors: {error_message}')
+        return {'Failed with errors': str(error_message)}, 400
 
 
 @ui.route('/register', methods=['GET'])
 def register():
     try:
         return render_template('register.html')
-    except Exception as er:
+    except Exception as error_message:
         print(
-            f'ip:{request.remote_addr} - "GET /register HTTP/1.1" 400 - failed with errors: {er}')
-        return {'Failed with errors': str(er)}, 400
+            f'ip:{request.remote_addr} - \
+            "GET /register HTTP/1.1" 400 - \
+            failed with errors: {error_message}')
+        return {'Failed with errors': str(error_message)}, 400
 
 
 @ui.route('/register', methods=['POST'])
@@ -126,37 +137,48 @@ def register_post():
 
         if password != password2:
             flash('Password is not same')
-            print(f'ip:{request.remote_addr}:user:{login} - "POST /register HTTP/1.1" 200 - Password is not same')
+            print(f'ip:{request.remote_addr}:user:{login} - \
+                "POST /register HTTP/1.1" 200 - \
+                Password is not same')
             return redirect(url_for('ui.register'))
         if user and login is not None:
             flash('User already exists')
-            print(f'ip:{request.remote_addr}:user:{login} - "POST /register HTTP/1.1" 200 - user:{login} already exists')
+            print(f'ip:{request.remote_addr}:user:{login} - \
+                "POST /register HTTP/1.1" 200 - \
+                user:{login} already exists')
             return redirect(url_for('ui.register'))
 
         if login and password and password2:
             new_user = User(login=login, password=password)
             db.session.add(new_user)
             db.session.commit()
-            print(f'ip:{request.remote_addr}:user:{login} - "POST /register HTTP/1.1" 200 - Register successful')
+            print(f'ip:{request.remote_addr}:user:{login} - \
+                "POST /register HTTP/1.1" 200 - \
+                Register successful')
             return redirect(url_for('ui.login_page'))
-        else:
-            flash('Fill in all the fields')
-            print(f'ip:{request.remote_addr} -"POST /register HTTP/1.1" 400 - not all fields are filled in ')
-            return redirect(url_for('ui.register')),400
-    except Exception as er:
+        flash('Fill in all the fields')
+        print(f'ip:{request.remote_addr} - \
+            "POST /register HTTP/1.1" 400 - \
+            not all fields are filled in ')
+        return redirect(url_for('ui.register')),400
+    except Exception as error_message:
         print(
-            f'ip:{request.remote_addr}:user:{login} - "POST /api/register HTTP/1.1" 400 - failed with errors: {er}')
-        return {'Failed with errors': str(er)}, 400
+            f'ip:{request.remote_addr}:user:{login} - \
+            "POST /api/register HTTP/1.1" 400 - \
+            failed with errors: {error_message}')
+        return {'Failed with errors': str(error_message)}, 400
 
 
 @ui.route('/login', methods=['GET'])
 def login_page():
     try:
         return render_template('login.html')
-    except Exception as er:
+    except Exception as error_message:
         print(
-            f'ip:{request.remote_addr}- "GET /login HTTP/1.1" 400 - failed with errors: {er}')
-        return {'Failed with errors': str(er)}, 400
+            f'ip:{request.remote_addr} - \
+            "GET /login HTTP/1.1" 400 - \
+            failed with errors: {error_message}')
+        return {'Failed with errors': str(error_message)}, 400
 
 
 @ui.route('/login', methods=['POST'])
@@ -170,15 +192,16 @@ def login_page_post():
             if user and check_password_hash(user.password, password):
                 login_user(user)
                 return redirect(url_for('ui.main'))
-            else:
-                flash('Wrong login or password')
+            flash('Wrong login or password')
         else:
             flash('Fill in all the fields')
         return redirect(url_for('ui.login_page'))
-    except Exception as er:
+    except Exception as error_message:
         print(
-            f'ip:{request.remote_addr}:user:{login}- "POST /login HTTP/1.1" 400 - failed with errors: {er}')
-        return {'Failed with errors': str(er)}, 400
+            f'ip:{request.remote_addr}:user:{login} - \
+            "POST /login HTTP/1.1" 400 - \
+            failed with errors: {error_message}')
+        return {'Failed with errors': str(error_message)}, 400
 
 
 @ui.route('/logout', methods=['GET', 'POST'])
@@ -187,10 +210,12 @@ def logout():
     try:
         logout_user()
         return redirect(url_for('ui.main'))
-    except Exception as er:
+    except Exception as error_message:
         print(
-            f'ip:{request.remote_addr} - "{request.method} /logout HTTP/1.1" 400 - failed with errors: {er}')
-        return {'Failed with errors': str(er)}, 400
+            f'ip:{request.remote_addr} - \
+            "{request.method} /logout HTTP/1.1" 400 - \
+            failed with errors: {error_message}')
+        return {'Failed with errors': str(error_message)}, 400
 
 
 @ui.route('/update', methods=['GET', 'POST'])
@@ -198,18 +223,19 @@ def logout():
 def update():
     try:
         if request.method == 'POST':
-            clean_count = cleanDatabase(Data)
+            clean_count = clean_database(Data)
             print("Count clean: "+str(clean_count))
             total_count = insert_data_from_api('Pink+Floyd')
             flash('Total uploaded: '+str(total_count))
             return render_template('update.html')
-        else:
-            return render_template('update.html')
+        return render_template('update.html')
 
-    except Exception as er:
+    except Exception as error_message:
         print(
-            f'ip:{request.remote_addr}- "GET /update HTTP/1.1" 400 - failed with errors: {er}')
-        return {'Failed with errors': str(er)}, 400
+            f'ip:{request.remote_addr} - \
+            "GET /update HTTP/1.1" 400 - \
+            failed with errors: {error_message}')
+        return {'Failed with errors': str(error_message)}, 400
 
 
 @ui.route('/get_data_all', methods=['GET'])
@@ -219,10 +245,12 @@ def get_data():
         session = db.session()
         data_all = session.query(Data).order_by(desc("track_price")).all()
         return render_template('all_data.html', data_all=data_all)
-    except Exception as er:
+    except Exception as error_message:
         print(
-            f'ip:{request.remote_addr}- "GET /update HTTP/1.1" 400 - failed with errors: {er}')
-        return {'Failed with errors': str(er)}, 400
+            f'ip:{request.remote_addr} - \
+            "GET /update HTTP/1.1" 400 - \
+            failed with errors: {error_message}')
+        return {'Failed with errors': str(error_message)}, 400
 
 
 @ui.route('/get_sort_data', methods=['GET', 'POST'])
@@ -241,9 +269,10 @@ def get_sort_data():
                     count += 1
             flash("Find results: "+str(count))
             return render_template('sort_data.html', data_all=result)
-        else:
-            return render_template('sort_data.html')
-    except Exception as er:
+        return render_template('sort_data.html')
+    except Exception as error_message:
         print(
-            f'ip:{request.remote_addr} - "GET /get_sort_data HTTP/1.1" 400 - failed with errors: {er}')
-        return {'Failed with errors': str(er)}, 400
+            f'ip:{request.remote_addr} - \
+            "GET /get_sort_data HTTP/1.1" 400 - \
+            failed with errors: {error_message}')
+        return {'Failed with errors': str(error_message)}, 400

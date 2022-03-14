@@ -1,0 +1,21 @@
+[MESSAGES CONTROL]
+disable=
+    locally-disabled,
+    locally-enabled,
+    logging-format-interpolation,
+    no-init,
+    too-few-public-methods,
+    broad-except,
+    missing-docstring,
+    too-few-public-methods,
+    too-many-instance-attributes,
+    too-many-arguments,
+    too-many-branches,
+    too-many-locals,
+    too-many-statements,
+    wrong-import-position,
+    no-member,
+    unused-argument,
+    redefined-outer-name,
+    cyclic-import,
+    
