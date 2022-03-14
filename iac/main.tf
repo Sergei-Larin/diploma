@@ -207,7 +207,7 @@ resource "aws_db_subnet_group" "db_subnets" {
 resource "random_string" "dev_rds_password" {
 	length 			 = 15
 	special 		 = true
-	override_special = "!#$"
+	override_special = "!$"
 }
 
 resource "aws_ssm_parameter" "dev_rds_password" {
@@ -247,7 +247,7 @@ resource "aws_db_instance" "dev" {
 resource "random_string" "prod_rds_password" {
 	length 			 = 15
 	special 		 = true
-	override_special = "!#$"
+	override_special = "!$"
 }
 
 resource "aws_ssm_parameter" "prod_rds_password" {
