@@ -113,11 +113,12 @@ pipeline {
                     sed -i 's|DB_PWD|$DB_PASSWORD|' k8s/manifest.yaml
                     sed -i 's|DB_NAME|$PG_SERVER|' k8s/manifest.yaml
                     sed -i 's|APP_KEY|$TOKEN|' k8s/manifest.yaml
-                    sed -i 's|APP_NAME|$PROJECT_NAME|' k8s/manifest.yaml
+                    sed -i 's|APP_NAME|$clusterNamespace-$PROJECT_NAME|' k8s/manifest.yaml
                     sed -i 's|ImageName|$DOCKER_REGISTRY/$IMAGE_NAME|' k8s/manifest.yaml
                     sed -i 's|NAMESPACE|$clusterNamespace|' k8s/manifest.yaml
                     sed -i 's|PORT|$servicePort|' k8s/manifest.yaml
                   """
+                  sh "kubectl apply -f k8s/migrate-job.yaml"
                   sh "kubectl apply -f k8s/manifest.yaml"
                   echo "Sleeping for 10 seconds..."
                   sleep(10)
@@ -141,6 +142,7 @@ pipeline {
           def app_config       = 'application.config.ProductionConfig'
           def clusterNamespace = 'prod'
           def servicePort  = 80
+          IMAGE_NAME = get_image_name()
           container('kubectl') {
             withKubeConfig([credentialsId: env.K8S_CREDENTIAL_ID, serverUrl: "${K8S_SERVER}"]) {
               withCredentials([usernamePassword(credentialsId: 'postgres-id', usernameVariable: 'DB_USERNAME', passwordVariable: 'DB_PASSWORD')]) {
@@ -152,11 +154,12 @@ pipeline {
                     sed -i 's|DB_PWD|$DB_PASSWORD|' k8s/manifest.yaml
                     sed -i 's|DB_NAME|$PG_SERVER|' k8s/manifest.yaml
                     sed -i 's|APP_KEY|$TOKEN|' k8s/manifest.yaml
-                    sed -i 's|APP_NAME|$PROJECT_NAME|' k8s/manifest.yaml
+                    sed -i 's|APP_NAME|$clusterNamespace-$PROJECT_NAME|' k8s/manifest.yaml
                     sed -i 's|ImageName|$DOCKER_REGISTRY/$IMAGE_NAME|' k8s/manifest.yaml
                     sed -i 's|NAMESPACE|$clusterNamespace|' k8s/manifest.yaml
                     sed -i 's|PORT|$servicePort|' k8s/manifest.yaml
                   """
+                  sh "kubectl apply -f k8s/migrate-job.yaml"
                   sh "kubectl apply -f k8s/manifest.yaml"
                   echo "Sleeping for 10 seconds..."
                   sleep(10)
