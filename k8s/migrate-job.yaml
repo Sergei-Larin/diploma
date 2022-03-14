@@ -6,7 +6,7 @@ spec:
   backoffLimit: 2
   template:
     metadata:
-      name: "migrate-job-APP_NAME"
+      name: "APP_NAME-migrate-job"
     spec:
       restartPolicy: Never
       activeDeadlineSeconds: 240

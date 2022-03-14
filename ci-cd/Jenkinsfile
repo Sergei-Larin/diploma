@@ -118,8 +118,7 @@ pipeline {
                     sed -i 's|NAMESPACE|$clusterNamespace|' k8s/manifest.yaml
                     sed -i 's|PORT|$servicePort|' k8s/manifest.yaml
                   """
-                  sh "kubectl apply -f k8s/migrate-job.yaml"
-                  sh "kubectl apply -f k8s/manifest.yaml"
+                  sh "kubectl apply -f k8s/manifest.yaml"       
                   echo "Sleeping for 10 seconds..."
                   sleep(10)
                   sh("echo http://`kubectl --namespace=${clusterNamespace} get service/${env.PROJECT_NAME}-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`")
@@ -159,7 +158,6 @@ pipeline {
                     sed -i 's|NAMESPACE|$clusterNamespace|' k8s/manifest.yaml
                     sed -i 's|PORT|$servicePort|' k8s/manifest.yaml
                   """
-                  sh "kubectl apply -f k8s/migrate-job.yaml"
                   sh "kubectl apply -f k8s/manifest.yaml"
                   echo "Sleeping for 10 seconds..."
                   sleep(10)
