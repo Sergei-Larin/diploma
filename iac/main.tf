@@ -560,6 +560,10 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
 	role       = aws_iam_role.eks_nodes.name
 }
 
+resource "aws_iam_role_policy_attachment" "CloudWatchAgentServerPolicy" {
+	policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+	role       = aws_iam_role.eks_nodes.name
+}
 
 resource "aws_eks_node_group" "node" {
 	cluster_name              = aws_eks_cluster.eks_cluster.name
