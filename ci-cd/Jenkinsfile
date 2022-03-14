@@ -113,7 +113,7 @@ pipeline {
                     sed -i 's|DB_PWD|$DB_PASSWORD|' k8s/manifest.yaml
                     sed -i 's|DB_NAME|$PG_SERVER|' k8s/manifest.yaml
                     sed -i 's|APP_KEY|$TOKEN|' k8s/manifest.yaml
-                    sed -i 's|APP_NAME|$clusterNamespace-$PROJECT_NAME|' k8s/manifest.yaml
+                    sed -i 's|APP_NAME|$PROJECT_NAME|' k8s/manifest.yaml
                     sed -i 's|ImageName|$DOCKER_REGISTRY/$IMAGE_NAME|' k8s/manifest.yaml
                     sed -i 's|NAMESPACE|$clusterNamespace|' k8s/manifest.yaml
                     sed -i 's|PORT|$servicePort|' k8s/manifest.yaml
@@ -153,7 +153,7 @@ pipeline {
                     sed -i 's|DB_PWD|$DB_PASSWORD|' k8s/manifest.yaml
                     sed -i 's|DB_NAME|$PG_SERVER|' k8s/manifest.yaml
                     sed -i 's|APP_KEY|$TOKEN|' k8s/manifest.yaml
-                    sed -i 's|APP_NAME|$clusterNamespace-$PROJECT_NAME|' k8s/manifest.yaml
+                    sed -i 's|APP_NAME|$PROJECT_NAME|' k8s/manifest.yaml
                     sed -i 's|ImageName|$DOCKER_REGISTRY/$IMAGE_NAME|' k8s/manifest.yaml
                     sed -i 's|NAMESPACE|$clusterNamespace|' k8s/manifest.yaml
                     sed -i 's|PORT|$servicePort|' k8s/manifest.yaml
