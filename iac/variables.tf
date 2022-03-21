@@ -178,7 +178,7 @@ variable "prod_rds_pass_key" {
 variable "prod_db_name" {
   description = "Name of the database to be created"
   type        = string
-  default     = "diploma"
+  default     = "diplomaprod"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
