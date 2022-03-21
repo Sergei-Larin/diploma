@@ -384,7 +384,7 @@ resource "aws_instance" "jenkins" {
 			"sed -i 's|sonar_token|${data.local_file.sonar-token.content}|g' .env_jenkins",
 			"sed -i 's/jenkins_ip/${aws_instance.jenkins.public_ip}/g' .env_jenkins",
 			"sed -i 's|k8s_endpoint|${data.aws_eks_cluster.cluster.endpoint}|g' .env_jenkins",
-			"sed -i 's|app_key|${var.app_key}|g' .env_jenkins",
+			"sed -i 's|app-key|${var.app_key}|g' .env_jenkins",
 			"sudo /usr/local/bin/docker-compose up --detach"
 		]
     }	
