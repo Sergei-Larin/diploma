@@ -30,68 +30,43 @@ def insert_data_from_api(search):
             record_count = response["resultCount"]
             total_count += record_count
             record_offset = int(record_offset) + max_offset
+            dict_list = [
+                'kind',
+                'collectionName',
+                'trackName',
+                'collectionPrice',
+                'trackPrice',
+                'primaryGenreName',
+                'trackCount',
+                'trackNumber',
+                'releaseDate'
+            ]
 
             for record in response["results"]:
                 session = db.session()
-
-                if "kind" in record:
-                    kind = record["kind"]
-                else:
-                    kind = None
-
-                if "collectionName" in record:
-                    collection_name = record["collectionName"]
-                else:
-                    collection_name = None
-
-                if "trackName" in record:
-                    track_name = record["trackName"]
-                else:
-                    track_name = None
-
-                if "collectionPrice" in record:
-                    collection_price = record["collectionPrice"]
-                else:
-                    collection_price = None
-
-                if "trackPrice" in record:
-                    track_price = record["trackPrice"]
-                else:
-                    track_price = None
-
-                if "primaryGenreName" in record:
-                    primary_genre_name = record["primaryGenreName"]
-                else:
-                    primary_genre_name = None
-
-                if "trackCount" in record:
-                    track_count = record["trackCount"]
-                else:
-                    track_count = None
-
-                if "trackNumber" in record:
-                    track_number = record["trackNumber"]
-                else:
-                    track_number = None
-
-                if "releaseDate" in record:
-                    release_date = record["releaseDate"]
-                else:
-                    release_date = None
+                out = list()
+                for el in dict_list:
+                    data = record.get(el)
+                    if not data:
+                        out.append(None)
+                        continue
+                    out.append(data)
 
                 row_data = Data(
-                    kind=kind,
-                    collection_name=collection_name,
-                    track_name=track_name,
-                    collection_price=collection_price,
-                    track_price=track_price,
-                    primary_genre_name=primary_genre_name,
-                    track_count=track_count,
-                    track_number=track_number,
-                    release_date=release_date,
+                    kind=out[0],
+                    collection_name=out[1],
+                    track_name=out[2],
+                    collection_price=out[3],
+                    track_price=out[4],
+                    primary_genre_name=out[5],
+                    track_count=out[6],
+                    track_number=out[7],
+                    release_date=out[8],
                 )
                 session.add(row_data)
                 session.commit()
+                print(out)
+
         else:
             print('Response Failed')
     return total_count

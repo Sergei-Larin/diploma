@@ -45,7 +45,6 @@
                         <th>TRACK COUNT</th>
                         <th>TRACK NUMBER</th>
                         <th>RELEASE DATA</th>
-                        <th>LAST UPDATE</th>
                     </thead>
                     <tbody>
                         {% for data in data_all %}
@@ -59,7 +58,6 @@
                             <td>{{ data.track_count }}</td>
                             <td>{{ data.track_number }}</td>
                             <td>{{ data.release_date }}</td>
-                            <td>{{ data.created_on }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
