@@ -35,7 +35,7 @@ spec:
             configMapKeyRef:
               name: APP_NAME-config-map
               key: app_settings
-        - name: DEV_DATABASE_URL
+        - name: DATABASE_URL
           valueFrom: 
             configMapKeyRef:
               name: APP_NAME-config-map
