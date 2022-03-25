@@ -1,4 +1,5 @@
 import requests
+import os
 from sqlalchemy import desc
 from flask import render_template, redirect, url_for, request, flash, Blueprint
 from flask_login import login_user, login_required, logout_user
@@ -10,7 +11,7 @@ from application.models import User, Data
 
 
 ui = Blueprint('ui', __name__)
-
+VERSION = os.environ['VERSION']
 
 def insert_data_from_api(search):
     total_count = 0
@@ -81,7 +82,7 @@ def clean_database(data):
 @ui.route('/')
 def main():
     try:
-        return render_template('index.html')
+        return render_template('index.html', ver=VERSION)
     except Exception as error_message:
         print(
             f'ip:{request.remote_addr} - \
@@ -93,7 +94,7 @@ def main():
 @ui.route('/register', methods=['GET'])
 def register():
     try:
-        return render_template('register.html')
+        return render_template('register.html', ver=VERSION)
     except Exception as error_message:
         print(
             f'ip:{request.remote_addr} - \
@@ -147,7 +148,7 @@ def register_post():
 @ui.route('/login', methods=['GET'])
 def login_page():
     try:
-        return render_template('login.html')
+        return render_template('login.html', ver=VERSION)
     except Exception as error_message:
         print(
             f'ip:{request.remote_addr} - \
@@ -202,8 +203,8 @@ def update():
             print("Count clean: "+str(clean_count))
             total_count = insert_data_from_api('Pink+Floyd')
             flash('Total uploaded: '+str(total_count))
-            return render_template('update.html')
-        return render_template('update.html')
+            return render_template('update.html', ver=VERSION)
+        return render_template('update.html', ver=VERSION)
 
     except Exception as error_message:
         print(
@@ -219,7 +220,7 @@ def get_data():
     try:
         session = db.session()
         data_all = session.query(Data).order_by(desc("track_price")).all()
-        return render_template('all_data.html', data_all=data_all)
+        return render_template('all_data.html', data_all=data_all, ver=VERSION)
     except Exception as error_message:
         print(
             f'ip:{request.remote_addr} - \
@@ -243,8 +244,8 @@ def get_sort_data():
                     result.append(data)
                     count += 1
             flash("Find results: "+str(count))
-            return render_template('sort_data.html', data_all=result)
-        return render_template('sort_data.html')
+            return render_template('sort_data.html', data_all=result, ver=VERSION)
+        return render_template('sort_data.html', ver=VERSION)
     except Exception as error_message:
         print(
             f'ip:{request.remote_addr} - \

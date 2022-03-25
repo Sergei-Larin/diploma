@@ -102,6 +102,7 @@ pipeline {
           def app_config       = 'application.config.DevelopmentConfig'
           def clusterNamespace = 'dev'
           def servicePort  = 80
+          def ver = env.GIT_COMMIT.take(7)
           IMAGE_NAME = get_image_name()
           container('kubectl') {
             withKubeConfig([credentialsId: env.K8S_CREDENTIAL_ID, serverUrl: "${K8S_SERVER}"]) {
@@ -110,6 +111,7 @@ pipeline {
                   println("=============================== STEP: Deploying to dev ===============================")
                   sh """
                     sed -i 's|APP_CONFIG|$app_config|' k8s/manifest.yaml
+                    sed -i 's|APP_VER|$ver|' k8s/manifest.yaml
                     sed -i 's|DB_USER|$DB_USERNAME|' k8s/manifest.yaml
                     sed -i 's|DB_PWD|$DB_PASSWORD|' k8s/manifest.yaml
                     sed -i 's|DB_NAME|$DEV_PG_SERVER|' k8s/manifest.yaml
@@ -142,6 +144,7 @@ pipeline {
           def app_config       = 'application.config.ProductionConfig'
           def clusterNamespace = 'prod'
           def servicePort  = 80
+          def ver = env.TAG_NAME
           IMAGE_NAME = get_image_name()
           container('kubectl') {
             withKubeConfig([credentialsId: env.K8S_CREDENTIAL_ID, serverUrl: "${K8S_SERVER}"]) {
@@ -150,6 +153,7 @@ pipeline {
                   println("=============================== STEP: Deploying to production ===============================")
                   sh """
                     sed -i 's|APP_CONFIG|$app_config|' k8s/manifest.yaml
+                    sed -i 's|APP_VER|$ver|' k8s/manifest.yaml
                     sed -i 's|DB_USER|$DB_USERNAME|' k8s/manifest.yaml
                     sed -i 's|DB_PWD|$DB_PASSWORD|' k8s/manifest.yaml
                     sed -i 's|DB_NAME|$PROD_PG_SERVER|' k8s/manifest.yaml
