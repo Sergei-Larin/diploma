@@ -63,3 +63,8 @@ output "docker_registry" {
   description = "Registry for docker images"
   value       = aws_ecr_repository.ecr_registry.repository_url
 }
+
+output "k8s_sa_token" {
+  description = "k8s SA token value"
+  value       = data.local_file.k8s_token.content
+}

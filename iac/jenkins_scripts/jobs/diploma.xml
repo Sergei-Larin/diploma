@@ -1,0 +1,101 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject plugin="workflow-multibranch@711.vdfef37cda_816">
+  <actions/>
+  <description>EPAM diploma project </description>
+  <displayName>diploma</displayName>
+  <properties>
+    <org.jenkinsci.plugins.docker.workflow.declarative.FolderConfig plugin="docker-workflow@1.28">
+      <dockerLabel></dockerLabel>
+      <registry plugin="docker-commons@1.19"/>
+    </org.jenkinsci.plugins.docker.workflow.declarative.FolderConfig>
+    <io.jenkins.blueocean.rest.impl.pipeline.credential.BlueOceanCredentialsProvider_-FolderPropertyImpl plugin="blueocean-pipeline-scm-api@1.25.3">
+      <domain plugin="credentials@1074.v60e6c29b_b_44b_">
+        <name>blueocean-folder-credential-domain</name>
+        <description>Домен учетных данных папки BlueOcean</description>
+        <specifications/>
+      </domain>
+      <user>admin</user>
+      <id>github</id>
+    </io.jenkins.blueocean.rest.impl.pipeline.credential.BlueOceanCredentialsProvider_-FolderPropertyImpl>
+    <org.csanchez.jenkins.plugins.kubernetes.KubernetesFolderProperty plugin="kubernetes@3538.v6b_005a_ddced1">
+      <permittedClouds/>
+    </org.csanchez.jenkins.plugins.kubernetes.KubernetesFolderProperty>
+  </properties>
+  <folderViews class="jenkins.branch.MultiBranchProjectViewHolder" plugin="branch-api@2.7.0">
+    <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
+  </folderViews>
+  <healthMetrics/>
+  <icon class="jenkins.branch.MetadataActionFolderIcon" plugin="branch-api@2.7.0">
+    <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
+  </icon>
+  <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@6.708.ve61636eb_65a_5">
+    <pruneDeadBranches>true</pruneDeadBranches>
+    <daysToKeep>5</daysToKeep>
+    <numToKeep>-1</numToKeep>
+    <abortBuilds>false</abortBuilds>
+  </orphanedItemStrategy>
+  <triggers/>
+  <disabled>false</disabled>
+  <sources class="jenkins.branch.MultiBranchProject$BranchSourceList" plugin="branch-api@2.7.0">
+    <data>
+      <jenkins.branch.BranchSource>
+        <source class="org.jenkinsci.plugins.github_branch_source.GitHubSCMSource" plugin="github-branch-source@2.11.4">
+          <id>blueocean</id>
+          <apiUri>https://api.github.com</apiUri>
+          <credentialsId>github-token-id</credentialsId>
+          <repoOwner>Sergei-Larin</repoOwner>
+          <repository>diploma</repository>
+          <repositoryUrl>https://github.com/Sergei-Larin/diploma</repositoryUrl>
+          <traits>
+            <org.jenkinsci.plugins.github__branch__source.BranchDiscoveryTrait>
+              <strategyId>3</strategyId>
+            </org.jenkinsci.plugins.github__branch__source.BranchDiscoveryTrait>
+            <org.jenkinsci.plugins.github__branch__source.TagDiscoveryTrait/>
+            <jenkins.scm.impl.trait.WildcardSCMHeadFilterTrait plugin="scm-api@595.vd5a_df5eb_0e39">
+              <includes>dev* release* v.*</includes>
+              <excludes>feature* , fix*, test*</excludes>
+            </jenkins.scm.impl.trait.WildcardSCMHeadFilterTrait>
+            <jenkins.plugins.git.traits.CleanBeforeCheckoutTrait plugin="git@4.10.3">
+              <extension class="hudson.plugins.git.extensions.impl.CleanBeforeCheckout">
+                <deleteUntrackedNestedRepositories>false</deleteUntrackedNestedRepositories>
+              </extension>
+            </jenkins.plugins.git.traits.CleanBeforeCheckoutTrait>
+            <jenkins.plugins.git.traits.CleanAfterCheckoutTrait plugin="git@4.10.3">
+              <extension class="hudson.plugins.git.extensions.impl.CleanCheckout">
+                <deleteUntrackedNestedRepositories>false</deleteUntrackedNestedRepositories>
+              </extension>
+            </jenkins.plugins.git.traits.CleanAfterCheckoutTrait>
+            <jenkins.plugins.git.traits.LocalBranchTrait plugin="git@4.10.3">
+              <extension class="hudson.plugins.git.extensions.impl.LocalBranch">
+                <localBranch>**</localBranch>
+              </extension>
+            </jenkins.plugins.git.traits.LocalBranchTrait>
+          </traits>
+        </source>
+        <strategy class="jenkins.branch.DefaultBranchPropertyStrategy">
+          <properties class="empty-list"/>
+        </strategy>
+        <buildStrategies>
+          <jenkins.branch.buildstrategies.basic.NamedBranchBuildStrategyImpl plugin="basic-branch-build-strategies@1.3.2">
+            <filters>
+              <jenkins.branch.buildstrategies.basic.NamedBranchBuildStrategyImpl_-WildcardsNameFilter>
+                <includes>dev* release* v.*</includes>
+                <excludes>feature* , fix*, test*</excludes>
+                <caseSensitive>false</caseSensitive>
+              </jenkins.branch.buildstrategies.basic.NamedBranchBuildStrategyImpl_-WildcardsNameFilter>
+            </filters>
+          </jenkins.branch.buildstrategies.basic.NamedBranchBuildStrategyImpl>
+          <jenkins.branch.buildstrategies.basic.TagBuildStrategyImpl plugin="basic-branch-build-strategies@1.3.2">
+            <atLeastMillis>-1</atLeastMillis>
+            <atMostMillis>345600000</atMostMillis>
+          </jenkins.branch.buildstrategies.basic.TagBuildStrategyImpl>
+        </buildStrategies>
+      </jenkins.branch.BranchSource>
+    </data>
+    <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
+  </sources>
+  <factory class="org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory">
+    <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
+    <scriptPath>ci-cd/Jenkinsfile</scriptPath>
+  </factory>
+</org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject>
