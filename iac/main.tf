@@ -352,10 +352,6 @@ resource "aws_instance" "jenkins" {
 		source      = "jenkins_scripts/docker-compose.yaml"
 		destination = "docker-compose.yaml" 
     }
-		provisioner "file" {
-		source      = "jenkins_scripts/sonar-token.txt"
-		destination = "sonar-token.txt" 
-    }
 	
     provisioner "remote-exec" {
 		inline = [
