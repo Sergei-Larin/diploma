@@ -281,142 +281,6 @@ resource "aws_db_instance" "prod" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# JENKINS INSTANCE
-# ---------------------------------------------------------------------------------------------------------------------
-
-resource "aws_security_group" "jenkins_sg" {
-    vpc_id = aws_vpc.vpc.id
-    name   = "Jenkins security group"
-	description = "security group for Jenkins"
-
-    dynamic "ingress" {
-		for_each = var.jenkins_ports
-		content {
-			from_port = ingress.value
-			to_port = ingress.value
-			protocol = "tcp"
-			cidr_blocks = ["0.0.0.0/0"]
-		}
-    }
-	
-	egress {
-        from_port = 0
-        to_port = 0
-        protocol = -1
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-	
-	tags =  merge (var.common_tags, {Name = "Allow connection to Jenkins"})	
-}
-
-data "local_file" "sonar-token" {
-    filename = "jenkins_scripts/sonar-token.txt"
-	depends_on = [null_resource.preparefile]
-}
-
-resource "aws_instance" "jenkins" {
-    ami                    = data.aws_ami.latest_aws_linux.id
-    instance_type          = var.instance_type
-    subnet_id              = aws_subnet.subnet-public-a.id
-    security_groups	  	   = [aws_security_group.jenkins_sg.id, aws_security_group.allow_ssh_sg.id]
-	key_name			   = aws_key_pair.ssh-key.key_name
-
-    connection {
-		type         = "ssh"
-		user         = "ec2-user"
-		private_key  = file(var.aws_private_key)
-		host         = aws_instance.jenkins.public_ip
-	}
-
-	provisioner "file" {
-		source      = "jenkins_scripts/Dockerfile.jenkins"
-		destination = "Dockerfile.jenkins" 
-    }
-	provisioner "file" {
-		source      = "jenkins_scripts/jenkins.yaml"
-		destination = "jenkins.yaml" 
-    }
-	provisioner "file" {
-		source      = "jenkins_scripts/plugins.txt"
-		destination = "plugins.txt" 
-    }
-	provisioner "file" {
-		source      = "jenkins_scripts/.env"
-		destination = ".env" 
-    }
-	provisioner "file" {
-		source      = "jenkins_scripts/.env_jenkins"
-		destination = ".env_jenkins" 
-    }
-	provisioner "file" {
-		source      = "jenkins_scripts/docker-compose.yaml"
-		destination = "docker-compose.yaml" 
-    }
-	
-    provisioner "remote-exec" {
-		inline = [
-			"sudo yum update -y",
-			"sudo amazon-linux-extras install docker -y",
-			"sudo yum install docker -y",
-			"sudo service docker start",
-			"sudo systemctl enable docker",
-			"sudo usermod -a -G docker ec2-user",
-			"sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose",
-			"sudo chmod +x /usr/local/bin/docker-compose"
-		]
-    }	
-	
-	    provisioner "remote-exec" {
-		inline = [
-			"sed -i 's/admin-name/${var.jenkins_admin_name}/g' .env_jenkins",
-			"sed -i 's/admin-pass/${var.jenkins_admin_name_pass}/g' .env_jenkins",
-			"sed -i 's/account_id/${data.aws_caller_identity.current.account_id}/g' .env_jenkins",
-			"sed -i 's/region_name/${data.aws_region.current.name}/g' .env_jenkins",
-			"sed -i 's/git_token/${var.github_token}/g' .env_jenkins",
-			"sed -i 's/dev_pg_entrypoint/${aws_db_instance.dev.address}/g' .env_jenkins",
-			"sed -i 's|dev_pg_password|${data.aws_ssm_parameter.dev_master_rds_password.value}|g' .env_jenkins",
-			"sed -i 's|dev_pg_username|${aws_db_instance.dev.username}|g' .env_jenkins",
-			"sed -i 's/prod_pg_entrypoint/${aws_db_instance.prod.address}/g' .env_jenkins",
-			"sed -i 's|prod_pg_password|${data.aws_ssm_parameter.prod_master_rds_password.value}|g' .env_jenkins",
-			"sed -i 's|prod_pg_username|${aws_db_instance.prod.username}|g' .env_jenkins",			
-			"sed -i 's/aws_id/${var.aws_id}/g' .env_jenkins",
-			"sed -i 's|aws_key|${var.aws_key}|g' .env_jenkins",
-			"sed -i 's/sonar_ip/${aws_instance.sonar.private_ip}/g' .env_jenkins",
-			"sed -i 's|sonar_token|${data.local_file.sonar-token.content}|g' .env_jenkins",
-			"sed -i 's/jenkins_ip/${aws_instance.jenkins.public_ip}/g' .env_jenkins",
-			"sed -i 's|k8s_endpoint|${data.aws_eks_cluster.cluster.endpoint}|g' .env_jenkins",
-			"sed -i 's|k8s_token_id|${data.local_file.k8s_token.content}|g' .env_jenkins",
-			"sed -i 's|app-key|${var.app_key}|g' .env_jenkins",
-		]
-    }
-	
-	provisioner "remote-exec" {
-		inline = [
-			"sudo /usr/local/bin/docker-compose up --detach"
-		]
-    }
-
-	tags =  merge (var.common_tags, {Name = "Jenkins Server"})	
-	
-	lifecycle {
-		ignore_changes = [
-			security_groups,
-		]
-    }
-	
-	depends_on = [
-		aws_ecr_repository.ecr_registry,
-		aws_db_instance.dev,
-		aws_db_instance.prod,
-		aws_ssm_parameter.dev_rds_password,
-		aws_ssm_parameter.prod_rds_password,
-		aws_instance.sonar,
-		null_resource.preparefile,
-		aws_eks_cluster.eks_cluster
-		]
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
 # SONARQUBE INSTANCE
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -753,3 +617,150 @@ resource "aws_ecr_lifecycle_policy" "ecr_policy" {
 EOF
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# JENKINS INSTANCE
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_security_group" "jenkins_sg" {
+    vpc_id = aws_vpc.vpc.id
+    name   = "Jenkins security group"
+	description = "security group for Jenkins"
+
+    dynamic "ingress" {
+		for_each = var.jenkins_ports
+		content {
+			from_port = ingress.value
+			to_port = ingress.value
+			protocol = "tcp"
+			cidr_blocks = ["0.0.0.0/0"]
+		}
+    }
+	
+	egress {
+        from_port = 0
+        to_port = 0
+        protocol = -1
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+	
+	tags =  merge (var.common_tags, {Name = "Allow connection to Jenkins"})	
+}
+
+data "local_file" "sonar-token" {
+    filename = "jenkins_scripts/sonar-token.txt"
+	depends_on = [null_resource.preparefile]
+}
+
+resource "aws_instance" "jenkins" {
+    ami                    = data.aws_ami.latest_aws_linux.id
+    instance_type          = var.instance_type
+    subnet_id              = aws_subnet.subnet-public-a.id
+    security_groups	  	   = [aws_security_group.jenkins_sg.id, aws_security_group.allow_ssh_sg.id]
+	key_name			   = aws_key_pair.ssh-key.key_name
+
+    connection {
+		type         = "ssh"
+		user         = "ec2-user"
+		private_key  = file(var.aws_private_key)
+		host         = aws_instance.jenkins.public_ip
+	}
+
+	provisioner "file" {
+		source      = "jenkins_scripts/Dockerfile.jenkins"
+		destination = "Dockerfile.jenkins" 
+    }
+	provisioner "file" {
+		source      = "jenkins_scripts/jenkins.yaml"
+		destination = "jenkins.yaml" 
+    }
+	provisioner "file" {
+		source      = "jenkins_scripts/plugins.txt"
+		destination = "plugins.txt" 
+    }
+	provisioner "file" {
+		source      = "jenkins_scripts/.env"
+		destination = ".env" 
+    }
+	provisioner "file" {
+		source      = "jenkins_scripts/.env_jenkins"
+		destination = ".env_jenkins" 
+    }
+	provisioner "file" {
+		source      = "jenkins_scripts/docker-compose.yaml"
+		destination = "docker-compose.yaml" 
+    }
+	provisioner "file" {
+		source      = "jenkins_scripts/jobs/diploma.xml"
+		destination = "diploma.xml" 
+    }
+    provisioner "remote-exec" {
+		inline = [
+			"sudo yum update -y",
+			"sudo amazon-linux-extras install docker -y",
+			"sudo yum install docker -y",
+			"sudo service docker start",
+			"sudo systemctl enable docker",
+			"sudo usermod -a -G docker ec2-user",
+			"sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose",
+			"sudo chmod +x /usr/local/bin/docker-compose"
+		]
+    }	
+	
+	    provisioner "remote-exec" {
+		inline = [
+			"sed -i 's/admin-name/${var.jenkins_admin_name}/g' .env_jenkins",
+			"sed -i 's/admin-pass/${var.jenkins_admin_name_pass}/g' .env_jenkins",
+			"sed -i 's/account_id/${data.aws_caller_identity.current.account_id}/g' .env_jenkins",
+			"sed -i 's/region_name/${data.aws_region.current.name}/g' .env_jenkins",
+			"sed -i 's/git_token/${var.github_token}/g' .env_jenkins",
+			"sed -i 's/dev_pg_entrypoint/${aws_db_instance.dev.address}/g' .env_jenkins",
+			"sed -i 's|dev_pg_password|${data.aws_ssm_parameter.dev_master_rds_password.value}|g' .env_jenkins",
+			"sed -i 's|dev_pg_username|${aws_db_instance.dev.username}|g' .env_jenkins",
+			"sed -i 's/prod_pg_entrypoint/${aws_db_instance.prod.address}/g' .env_jenkins",
+			"sed -i 's|prod_pg_password|${data.aws_ssm_parameter.prod_master_rds_password.value}|g' .env_jenkins",
+			"sed -i 's|prod_pg_username|${aws_db_instance.prod.username}|g' .env_jenkins",			
+			"sed -i 's/aws_id/${var.aws_id}/g' .env_jenkins",
+			"sed -i 's|aws_key|${var.aws_key}|g' .env_jenkins",
+			"sed -i 's/sonar_ip/${aws_instance.sonar.private_ip}/g' .env_jenkins",
+			"sed -i 's|sonar_token|${data.local_file.sonar-token.content}|g' .env_jenkins",
+			"sed -i 's/jenkins_ip/${aws_instance.jenkins.public_ip}/g' .env_jenkins",
+			"sed -i 's|k8s_endpoint|${data.aws_eks_cluster.cluster.endpoint}|g' .env_jenkins",
+			"sed -i 's|k8s_token_id|${data.local_file.k8s_token.content}|g' .env_jenkins",
+			"sed -i 's|app-key|${var.app_key}|g' .env_jenkins",
+		]
+    }
+	
+	provisioner "remote-exec" {
+		inline = [
+			"sudo /usr/local/bin/docker-compose up --detach"
+		]
+    }
+
+	provisioner "remote-exec" {
+		inline = [
+			"echo Waiting startup Jenkins Server...",
+			"sleep 30",
+			"curl -X POST -H \"Content-Type:application/xml\" -d @diploma.xml http://${aws_instance.jenkins.public_ip}:8080//createItem?name=diploma -u admin:$(curl -H \"Jenkins-Crumb:$(curl -u ${var.jenkins_admin_name}:${var.jenkins_admin_name_pass} --cookie-jar cookies http://${aws_instance.jenkins.public_ip}:8080/crumbIssuer/api/json | grep -Eo '.{102}$' | grep -Eo '^.{64}')\" --cookie cookies http://${aws_instance.jenkins.public_ip}:8080/me/descriptorByName/jenkins.security.ApiTokenProperty/generateNewToken --data 'newTokenName=token' -u ${var.jenkins_admin_name}:${var.jenkins_admin_name_pass} | grep -Eo '.{37}$' | grep -Eo '^.{34}')",
+			"rm -rf cookies /tmp/terraform_*"
+		]
+    }
+
+	tags =  merge (var.common_tags, {Name = "Jenkins Server"})	
+	
+	lifecycle {
+		ignore_changes = [
+			security_groups,
+		]
+    }
+	
+	depends_on = [
+		aws_ecr_repository.ecr_registry,
+		aws_db_instance.dev,
+		aws_db_instance.prod,
+		aws_ssm_parameter.dev_rds_password,
+		aws_ssm_parameter.prod_rds_password,
+		aws_instance.sonar,
+		null_resource.preparefile,
+		aws_eks_cluster.eks_cluster
+		]
+}

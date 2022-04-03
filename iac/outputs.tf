@@ -18,6 +18,10 @@ output "jenkins_server_public_ip" {
   value = aws_instance.jenkins.public_ip
 }
 
+output "jenkins_server_url" {
+  value = "http://${aws_instance.jenkins.public_ip}:8080"
+}
+
 output "sonar_server_public_ip" {
   value = aws_instance.sonar.public_ip
 }
@@ -54,11 +58,6 @@ output "cluster_endpoint" {
   value       = data.aws_eks_cluster.cluster.endpoint
 }
 
-output "region" {
-  description = "AWS region"
-  value       = var.default_aws_region
-}
-
 output "docker_registry" {
   description = "Registry for docker images"
   value       = aws_ecr_repository.ecr_registry.repository_url
@@ -68,3 +67,4 @@ output "k8s_sa_token" {
   description = "k8s SA token value"
   value       = data.local_file.k8s_token.content
 }
+
