@@ -1,12 +1,7 @@
 FROM jenkins/jenkins:lts
-ARG KUBCTL_VERSION
-ARG KUBCTL_ARCH
 
 USER root
 RUN apt-get update && apt-get install -y lsb-release
-
-RUN curl --silent -o- -L https://storage.googleapis.com/kubernetes-release/release/$KUBCTL_VERSION/bin/linux/$KUBCTL_ARCH/kubectl > /usr/local/bin/kubectl \
-    && chmod +x /usr/local/bin/kubectl
 
 RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
   https://download.docker.com/linux/debian/gpg
