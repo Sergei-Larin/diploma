@@ -1,17 +1,17 @@
-#Infrastructure as code by Terraform
-##Description
+# Infrastructure as code by Terraform
+## Description
 For create infrastructure you need have programms:
- -python
- -AWS-cli
- -powershell
- -curl
- -kubectl
+ ⋅⋅*python
+ ⋅⋅*AWS-cli
+ ⋅⋅*powershell
+ ⋅⋅*curl
+ ⋅⋅*kubectl
 
-##Prepare iac
-1.Getenereate RSA key for AWS:
+## Prepare iac
+1. Getenereate RSA key for AWS:
 ssh-keygen
 
-2.Create terraform.tfvars file with variables: from template varName="Value"
+2. Create terraform.tfvars file with variables: from template varName="Value"
 
 | Variable Name  | Examlple value | Description |
 | ------------- | ------------- | ------------- |
@@ -31,8 +31,8 @@ ssh-keygen
 | jenkins_admin_name  | admin  | Jenkins administrator name |
 | jenkins_admin_name_pass  | Pass  | Jenkins administrator pass |
 
-3.Copy jenkins_scripts/.env.example to jenkins_scripts/.env and edit variable for Jenkins Server if you need
+3. Copy jenkins_scripts/.env.example to jenkins_scripts/.env and edit variable for Jenkins Server if you need
 
-4.Create infrastructure: 
-  -terraform plan
-  -terraform apply
+4. Create infrastructure: 
+  ⋅⋅*terraform plan
+  ⋅⋅*terraform apply
