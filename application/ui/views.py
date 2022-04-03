@@ -1,5 +1,5 @@
-import requests
 import os
+import requests
 from sqlalchemy import desc
 from flask import render_template, redirect, url_for, request, flash, Blueprint
 from flask_login import login_user, login_required, logout_user
@@ -45,9 +45,9 @@ def insert_data_from_api(search):
 
             for record in response["results"]:
                 session = db.session()
-                out = list()
-                for el in dict_list:
-                    data = record.get(el)
+                out = []
+                for element in dict_list:
+                    data = record.get(element)
                     if not data:
                         out.append(None)
                         continue
