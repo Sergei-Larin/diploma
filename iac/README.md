@@ -11,7 +11,7 @@ For create infrastructure you need have programms:
 1. Getenereate RSA key for AWS:
 ssh-keygen
 
-2. Create terraform.tfvars file with variables: from template varName="Value"
+2. Create terraform.tfvars file in iac dir  with variables: from template varName="Value"
 
 | Variable Name  | Examlple value | Description |
 | ------------- | ------------- | ------------- |
