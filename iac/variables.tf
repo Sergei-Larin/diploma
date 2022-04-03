@@ -92,30 +92,13 @@ variable "jenkins_admin_name_pass" {
 	type 		= string
 }
 # ---------------------------------------------------------------------------------------------------------------------
-# DATABASE
+# DATABASE GENERAL
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "db_username" {
   description = "Master username of the DB"
   type        = string
   default     = "masterdb"
-}
-
-variable "db_name" {
-  description = "Name of the database to be created"
-  type        = string
-  default     = "diploma"
-}
-
-variable "rds_pass_key" {
-  description = "Name of the rds password to be created"
-  type        = string
-  default     = "/database/password/master"
-}
-variable "name" {
-  description = "Name of the database"
-  type        = string
-  default     = "pgsql"
 }
 
 variable "engine_name" {
@@ -152,6 +135,50 @@ variable "instance_class" {
   description = "Instance class to be used to run the database"
   type        = string
   default     = "db.t3.micro"
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# DATABASE DEV
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "dev_name" {
+  description = "Name of the dev database"
+  type        = string
+  default     = "dev-pgsql"
+}
+
+variable "dev_db_name" {
+  description = "Name of the database to be created"
+  type        = string
+  default     = "diplomadev"
+}
+
+variable "dev_rds_pass_key" {
+  description = "Name of the rds password to be created"
+  type        = string
+  default     = "/database/dev-password/master"
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# DATABASE PROD
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "prod_name" {
+  description = "Name of the prod database"
+  type        = string
+  default     = "prod-pgsql"
+}
+
+variable "prod_rds_pass_key" {
+  description = "Name of the rds password to be created"
+  type        = string
+  default     = "/database/prod-password/master"
+}
+
+variable "prod_db_name" {
+  description = "Name of the database to be created"
+  type        = string
+  default     = "diplomaprod"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------

@@ -11,7 +11,8 @@ properties([
     parameters([
       string(name: "DOCKER_CREDENTIAL_ID", defaultValue: "ecr:eu-central-1:aws-credentials-id", description: "ECR credentials"),
       string(name: "PROJECT_NAME", defaultValue: "diploma", description: "Project name and registry name for images"),
-      string(name: "POSTGRES_CREDENTIAL_ID", defaultValue: "postgres-id", description: "ID postgres credential"),
+      string(name: "DEV_POSTGRES_CREDENTIAL_ID", defaultValue: "dev-postgres-id", description: "DEV ID postgres credential"),
+      string(name: "PROD_POSTGRES_CREDENTIAL_ID", defaultValue: "prod-postgres-id", description: "DEV ID postgres credential"),
       string(name: "K8S_CREDENTIAL_ID", defaultValue: "k8s-sa-id", description: "ID SA kubernetes"),
       string(name: "SONAR_CREDENTIAL_ID", defaultValue: "sonar-token", description: "ID token SonaQube"),
     ])
@@ -101,17 +102,19 @@ pipeline {
           def app_config       = 'application.config.DevelopmentConfig'
           def clusterNamespace = 'dev'
           def servicePort  = 80
+          def ver = env.GIT_COMMIT.take(7)
           IMAGE_NAME = get_image_name()
           container('kubectl') {
             withKubeConfig([credentialsId: env.K8S_CREDENTIAL_ID, serverUrl: "${K8S_SERVER}"]) {
-              withCredentials([usernamePassword(credentialsId: 'postgres-id', usernameVariable: 'DB_USERNAME', passwordVariable: 'DB_PASSWORD')]) {
+              withCredentials([usernamePassword(credentialsId: env.DEV_POSTGRES_CREDENTIAL_ID, usernameVariable: 'DB_USERNAME', passwordVariable: 'DB_PASSWORD')]) {
                 withCredentials([string(credentialsId: 'app-key-id', variable: 'TOKEN')]) {
                   println("=============================== STEP: Deploying to dev ===============================")
                   sh """
                     sed -i 's|APP_CONFIG|$app_config|' k8s/manifest.yaml
+                    sed -i 's|APP_VER|$ver|' k8s/manifest.yaml
                     sed -i 's|DB_USER|$DB_USERNAME|' k8s/manifest.yaml
                     sed -i 's|DB_PWD|$DB_PASSWORD|' k8s/manifest.yaml
-                    sed -i 's|DB_NAME|$PG_SERVER|' k8s/manifest.yaml
+                    sed -i 's|DB_NAME|$DEV_PG_SERVER|' k8s/manifest.yaml
                     sed -i 's|APP_KEY|$TOKEN|' k8s/manifest.yaml
                     sed -i 's|APP_NAME|$PROJECT_NAME|' k8s/manifest.yaml
                     sed -i 's|ImageName|$DOCKER_REGISTRY/$IMAGE_NAME|' k8s/manifest.yaml
@@ -141,17 +144,19 @@ pipeline {
           def app_config       = 'application.config.ProductionConfig'
           def clusterNamespace = 'prod'
           def servicePort  = 80
+          def ver = env.TAG_NAME
           IMAGE_NAME = get_image_name()
           container('kubectl') {
             withKubeConfig([credentialsId: env.K8S_CREDENTIAL_ID, serverUrl: "${K8S_SERVER}"]) {
-              withCredentials([usernamePassword(credentialsId: 'postgres-id', usernameVariable: 'DB_USERNAME', passwordVariable: 'DB_PASSWORD')]) {
+              withCredentials([usernamePassword(credentialsId: env.PROD_POSTGRES_CREDENTIAL_ID, usernameVariable: 'DB_USERNAME', passwordVariable: 'DB_PASSWORD')]) {
                 withCredentials([string(credentialsId: 'app-key-id', variable: 'TOKEN')]) {
                   println("=============================== STEP: Deploying to production ===============================")
                   sh """
                     sed -i 's|APP_CONFIG|$app_config|' k8s/manifest.yaml
+                    sed -i 's|APP_VER|$ver|' k8s/manifest.yaml
                     sed -i 's|DB_USER|$DB_USERNAME|' k8s/manifest.yaml
                     sed -i 's|DB_PWD|$DB_PASSWORD|' k8s/manifest.yaml
-                    sed -i 's|DB_NAME|$PG_SERVER|' k8s/manifest.yaml
+                    sed -i 's|DB_NAME|$PROD_PG_SERVER|' k8s/manifest.yaml
                     sed -i 's|APP_KEY|$TOKEN|' k8s/manifest.yaml
                     sed -i 's|APP_NAME|$PROJECT_NAME|' k8s/manifest.yaml
                     sed -i 's|ImageName|$DOCKER_REGISTRY/$IMAGE_NAME|' k8s/manifest.yaml
