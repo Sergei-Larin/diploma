@@ -534,38 +534,38 @@ resource "null_resource" "get_k8s_token_name" {
 
 data "local_file" "k8s_token_name" {
     filename = "k8s/sa-token-name.txt"
-	depends_on = [null_resource.get_k8s_token_name]
+	depends_on = [null_resource.prepare_k8s,null_resource.get_k8s_token_name]
 }
 
 resource "null_resource" "get_k8s_sa_token" {
 	provisioner "local-exec" {
 		command  =  "kubectl -n default get secret ${data.local_file.k8s_token_name.content} -o jsonpath={.data.token} > k8s/sa-encode.txt"
 	}
-	depends_on = [data.local_file.k8s_token_name]
+	depends_on = [null_resource.prepare_k8s, data.local_file.k8s_token_name]
 }
 
 data "local_file" "k8s_token_encode" {
     filename = "k8s/sa-encode.txt"
-	depends_on = [null_resource.get_k8s_sa_token]
+	depends_on = [null_resource.prepare_k8s, null_resource.get_k8s_sa_token]
 }
 
 resource "null_resource" "decode_k8s_sa_token" {
 	provisioner "local-exec" {
 		command  =  "powershell [Text.Encoding]::UTF8.GetString([convert]::FromBase64String(\"${data.local_file.k8s_token_encode.content}\")) > k8s/sa.txt" 
 	}
-	depends_on = [data.local_file.k8s_token_encode]
+	depends_on = [null_resource.prepare_k8s, data.local_file.k8s_token_encode]
 }
 
 resource "null_resource" "normalize_file" {
 	provisioner "local-exec" {
 		command  = "python k8s/decode_sa.py"
 	}
-	depends_on = [null_resource.decode_k8s_sa_token]
+	depends_on = [null_resource.prepare_k8s, null_resource.decode_k8s_sa_token]
 }
 
 data "local_file" "k8s_token" {
     filename = "k8s/sa.txt"
-	depends_on = [null_resource.normalize_file]
+	depends_on = [null_resource.prepare_k8s,null_resource.normalize_file]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
