@@ -5,9 +5,6 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.jenkins
-      args:
-        KUBCTL_VERSION: "${KUBCTL_VERSION}"
-        KUBCTL_ARCH: "${KUBCTL_ARCH}"
     env_file:
       - .env_jenkins
     image: jenkins-server:lts
