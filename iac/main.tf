@@ -201,7 +201,7 @@ resource "aws_db_subnet_group" "db_subnets" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEVE DATABASE INSTANCE
+# DEV DATABASE INSTANCE
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "random_string" "dev_rds_password" {
@@ -493,13 +493,13 @@ resource "aws_eks_node_group" "node" {
 	tags =  merge (var.common_tags, {Name = "Node k8s"})
 
 	scaling_config {
-		desired_size = 2
+		desired_size = 1
 		max_size     = 2
 		min_size     = 1
 	}
 
 	update_config {
-        max_unavailable = 2
+        max_unavailable = 1
     }
 
 	depends_on = [
